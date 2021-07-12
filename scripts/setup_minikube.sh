@@ -253,7 +253,7 @@ configure_nevermined_compute() {
   $K apply -n $COMPUTE_NAMESPACE -f https://raw.githubusercontent.com/argoproj/argo-workflows/master/manifests/quick-start-minimal.yaml
 
   # Install argo artifacts
-  helm install -n $COMPUTE_NAMESPACE argo-artifacts stable/minio --set fullnameOverride=argo-artifacts --set resources.requests.memory=1Gi
+  helm install -n $COMPUTE_NAMESPACE argo-artifacts stable/minio --set fullnameOverride=argo-artifacts --set resources.requests.memory=1Gi --set persistence.size=1Gi
   $K -n $COMPUTE_NAMESPACE get services -o wide | grep argo-artifacts
   echo -e "${COLOR_G}"Notice: argo-artifacts was successfully installed"${COLOR_RESET}"
 
@@ -282,6 +282,8 @@ configure_nevermined_compute() {
     echo -e "Waiting for pod argo-server to be created"
     sleep 5
   done
+  sleep 120
+  $K -n $COMPUTE_NAMESPACE describe pods
   $K -n $COMPUTE_NAMESPACE wait --for=condition=ready pod -l app=argo-server --timeout=300s
   $K -n $COMPUTE_NAMESPACE port-forward deployment/argo-server 2746:2746 &
 
